@@ -1,26 +1,61 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
 
-function App() {
+import "./App.css";
+import API from "./Adapters/API";
+import LoansContainer from "./Containers/LoansContainer";
+import NewLoanForm from "./Components/NewLoanForm";
+import Header from "./Components/Header";
+
+const App = () => {
+  const [loansData, setLoansData] = useState([]);
+
+  // fetch all loans on page load.
+  useEffect(() => {
+    handleLoansFetch();
+  }, []);
+
+  const handleLoansFetch = () => {
+    API.getAllLoans().then(loans => {
+      setLoansData(loans);
+    });
+  };
+
+  const handleNewLoan = newLoan => {
+    setLoansData(prevLoansData => [...prevLoansData, newLoan]);
+  };
+
+  const handleLoanDelete = loanId => {
+    const updatedLoansList = loansData.filter(loan => loan.id !== loanId);
+
+    API.deleteLoan(loanId).then(setLoansData(updatedLoansList));
+  };
+
+  const handleSearchByID = loan => {
+    if (loan) {
+      setLoansData([loan]);
+    } else {
+      setLoansData([]);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <div className='App'>
+      <header>
+        <br />
+        <Header />
+        <br />
+        <br />
       </header>
+      <NewLoanForm handlePost={handleNewLoan} /> <br />
+      <br />
+      <LoansContainer
+        loans={loansData}
+        handleDelete={handleLoanDelete}
+        handleSearch={handleSearchByID}
+        handleReset={handleLoansFetch}
+      />
     </div>
   );
-}
+};
 
 export default App;
